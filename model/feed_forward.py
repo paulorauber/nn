@@ -15,7 +15,7 @@ sigmoid = expit
 
 
 class FeedForwardNetwork(BaseEstimator, ClassifierMixin):
-
+    """Feedforward artificial neural network with arbitrary number of layers."""
     def __init__(self, n_hidden_neurons, learning_rate=3.0, batch_size=10,
                  n_epochs=30, lmbda=5.0, output_activation='softmax',
                  random_state=None, verbose=0):
@@ -44,6 +44,13 @@ class FeedForwardNetwork(BaseEstimator, ClassifierMixin):
 
         self.n_layers_ = len(self.n_neurons_)
 
+        self.init_parameters()
+
+        self.stochastic_gradient_descent(X, t)
+
+        return self
+
+    def init_parameters(self):
         self.W_ = []
         self.b_ = []
         for i in range(1, self.n_layers_):
@@ -52,10 +59,6 @@ class FeedForwardNetwork(BaseEstimator, ClassifierMixin):
 
             self.W_.append(self.random_state_.normal(0, sdev, size=dim))
             self.b_.append(self.random_state_.randn(self.n_neurons_[i]))
-
-        self.stochastic_gradient_descent(X, t)
-
-        return self
 
     def stochastic_gradient_descent(self, X, t):
         bs = self.batch_size
@@ -94,13 +97,18 @@ class FeedForwardNetwork(BaseEstimator, ClassifierMixin):
                 # Note that a[0] = xi
                 partial_W[l] += err[l].reshape(-1, 1).dot(a[l].reshape(1, -1))
 
-        decay = (1. - (self.learning_rate * self.lmbda) / n)
-        # Moving parameters in opposite direction to the gradient
         for l in range(0, self.n_layers_ - 1):
             partial_b[l] /= X.shape[0]
-            self.b_[l] -= self.learning_rate * partial_b[l]
-
             partial_W[l] /= X.shape[0]
+        
+        # Moving parameters in opposite direction to the gradient
+        self.move_parameters(partial_b, partial_W, n)
+
+    def move_parameters(self, partial_b, partial_W, n):
+        decay = (1. - (self.learning_rate * self.lmbda) / n)
+        
+        for l in range(0, self.n_layers_ - 1):
+            self.b_[l] -= self.learning_rate * partial_b[l]
             self.W_[l] = decay * self.W_[l] - self.learning_rate*partial_W[l]
 
     def forward_pass(self, x):
@@ -132,3 +140,42 @@ class FeedForwardNetwork(BaseEstimator, ClassifierMixin):
 
     def predict(self, X):
         return self.classes_[np.argmax(self.predict_proba(X), axis=1)]
+
+
+class FeedForwardNetworkMomentum(FeedForwardNetwork):
+    """Feedforward artificial neural network with arbitrary number of layers.
+    Momentum-based stochastic gradient descent."""
+    def __init__(self, n_hidden_neurons, learning_rate=3.0, batch_size=10,
+                 n_epochs=30, lmbda=5.0, mu=0.5, output_activation='softmax', 
+                 random_state=None, verbose=0):
+        FeedForwardNetwork.__init__(self, n_hidden_neurons, learning_rate,
+                                         batch_size, n_epochs, lmbda,
+                                         output_activation, random_state,
+                                         verbose)
+        self.mu = mu
+
+    def init_parameters(self):
+        self.W_ = []
+        self.b_ = []
+
+        self.Vw_ = []
+        self.Vb_ = []
+        for i in range(1, self.n_layers_):
+            sdev = 1.0 / np.sqrt(self.n_neurons_[i - 1])
+            dim = (self.n_neurons_[i], self.n_neurons_[i - 1])
+
+            self.W_.append(self.random_state_.normal(0, sdev, size=dim))
+            self.b_.append(self.random_state_.randn(self.n_neurons_[i]))
+
+            self.Vw_.append(np.zeros(dim))
+            self.Vb_.append(np.zeros(self.n_neurons_[i]))
+            
+    def move_parameters(self, partial_b, partial_W, n):
+        lmbda_n = float(self.lmbda)/n
+        for l in range(0, self.n_layers_ - 1):
+            self.Vb_[l] = self.mu*self.Vb_[l] - self.learning_rate*partial_b[l]
+            self.Vw_[l] = self.mu*self.Vw_[l] -\
+                self.learning_rate*(partial_W[l] + lmbda_n*self.W_[l])            
+            
+            self.b_[l] += self.Vb_[l]
+            self.W_[l] += self.Vw_[l]
