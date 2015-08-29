@@ -30,6 +30,13 @@ Models:
         L2 regularization
         Momentum
     
+    Long Short-Term memory network (sequence element classifier)
+        Single hidden layer
+        Cross-entropy and negative log-likelihood cost functions
+        Backpropagation
+        Online gradient descent
+        Momentum
+    
 Examples
 --------
 See the examples directory. 
