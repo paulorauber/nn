@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.utils import check_random_state
 
-from nn.model.recurrent import RecurrentNetwork
+from nn.model.lstm import LongShortTermMemoryNetwork
 
 random_state = check_random_state(None)
 
@@ -50,36 +50,37 @@ def nback_example():
     # Training 
     Xtrain, ytrain = nback_dataset(n_sequences, mean_length, std_length, n, k)
     
-    rnn = RecurrentNetwork(64, learning_rate=2.0, n_epochs=30, 
-                 lmbda=0.0, mu=0.2, output_activation='softmax', 
-                 random_state=None, verbose=1)
+    lstm = LongShortTermMemoryNetwork(64, learning_rate=2.0, n_epochs=70,
+                                      mu=0.7, output_activation='softmax', 
+                                      random_state=None, verbose=1)
                  
-    rnn.fit(Xtrain, ytrain)
+    lstm.fit(Xtrain, ytrain)
     
     # Evaluating
-    Xtest, ytest = nback_dataset(5*n_sequences, 5*mean_length, 5*std_length, n, k)
+    Xtest, ytest = nback_dataset(5*n_sequences, 5*mean_length, 5*std_length, 
+                                 n, k)
     
-    print('Average accuracy: {0:.3f}'.format(rnn.score(Xtest, ytest)))
+    print('\nTest score: {0:.3f}.'.format(lstm.score(Xtest, ytest)))
     
     acc_zeros = 0.0
     for yi in ytest:
         acc_zeros += float((yi == 0).sum()) / len(yi)
     acc_zeros /= len(ytest)
-    print('Negative guess accuracy: {0:.3f}'.format(acc_zeros))
+    print('Negative guess score: {0:.3f}.'.format(acc_zeros))
     
     # Example
     Xi_ = [3, 2, 1, 3, 2, 1, 3, 2, 2, 1, 2, 3, 1, 2, 0, 0, 2, 0]
-    print('\nExample sequence: {0}'.format(Xi_))
+    print('\nExample sequence: {0}.'.format(Xi_))
     yi = np.zeros(len(Xi_), dtype=int)
     for t in range(n, len(Xi_)):
         yi[t] = (Xi_[t - n] == Xi_[t]) 
         
     Xi = one_of_k(Xi_, k)
         
-    yipred = rnn.predict([Xi])[0]
-    print('Correct: \t{0}'.format(yi))
-    print('Predicted: \t{0}'.format(yipred))
-    print('Accuracy: {0:.3f}'.format(float((yi == yipred).sum())/len(yi)))
+    yipred = lstm.predict([Xi])[0]
+    print('Correct: \t{0}.'.format(yi))
+    print('Predicted: \t{0}.'.format(yipred))
+    print('Score: {0:.3f}.'.format(float((yi == yipred).sum())/len(yi)))
 
 def main():
     nback_example()

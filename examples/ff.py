@@ -2,8 +2,8 @@ import numpy as np
 import gzip
 import pickle
 
-from model.feed_forward import FeedForwardNetwork
-from model.feed_forward import FeedForwardNetworkMomentum
+from nn.model.feed_forward import FeedForwardNetwork
+from nn.model.feed_forward import FeedForwardNetworkMomentum
 
 def classify_mnist(nn):
     f = gzip.open('data/mnist.pkl.gz', 'rb')
