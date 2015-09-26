@@ -5,7 +5,7 @@ from sklearn.utils import check_random_state
 from scipy.special import expit
 
 def sigmoid(x):
-    return expit(np.clip(x, -20, 20))
+    return expit(np.clip(x, -30, 30))
 
 class RestrictedBoltzmannMachine:
     def __init__(self, n_hidden_variables, learning_rate=0.1, batch_size=20,
@@ -127,7 +127,7 @@ class RestrictedBoltzmannMachine:
         
             samples.append(v)
         
-        return np.array(samples)
+        return np.array(samples, dtype=np.bool)
         
     def reconstruction_error(self, X):
         X = np.asarray(X, dtype=np.bool)

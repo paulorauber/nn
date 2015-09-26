@@ -27,10 +27,10 @@ def main():
     X = train_Xy[0] > binary_threshold
     
     rbm = RestrictedBoltzmannMachine(n_hidden_variables=500, 
-                                     learning_rate=0.1, batch_size=20,
-                                     n_epochs=1, mu=0.0, pcd_steps=15,
+                                     learning_rate=0.01, batch_size=20,
+                                     n_epochs=50, mu=0.5, pcd_steps=15,
                                      random_state=0, verbose=4)
-                       
+          
     rbm.fit(X)
     
     n_restarts = 20
@@ -39,7 +39,7 @@ def main():
         print('Restart {0}. Initial image:'.format(i + 1))
         print_digit(X[ind])    
         
-        Xs = rbm.sample(X[ind], sample_size=20, thinning=2000)
+        Xs = rbm.sample(X[ind], sample_size=20, thinning=1000)
         
         for j, xs in enumerate(Xs):
             print('Restart {0}. Image {1}:'.format(i + 1, j + 1))
