@@ -27,7 +27,7 @@ def main():
     X = train_Xy[0] > binary_threshold
     
     rbm = RestrictedBoltzmannMachine(n_hidden_variables=500, 
-                                     learning_rate=0.01, batch_size=20,
+                                     learning_rate=0.001, batch_size=20,
                                      n_epochs=50, mu=0.5, pcd_steps=15,
                                      random_state=0, verbose=4)
           
