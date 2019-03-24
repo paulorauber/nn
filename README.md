@@ -1,4 +1,4 @@
-# Neural networks in python.
+# Neural networks in python
 
 This code is intended mainly as proof of concept of the algorithms presented in [1-7]. The implementations are not particularly clear, efficient, well tested or numerically stable. We advise against using this software for nondidactic purposes.
 
